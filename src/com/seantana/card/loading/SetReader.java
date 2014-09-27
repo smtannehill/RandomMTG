@@ -21,7 +21,6 @@ public class SetReader {
 		final List<Card> cards = new ArrayList<Card>();
 		for (final File jsonFile : folder.listFiles()) {
 			System.out.println(jsonFile.getName());
-			// if (jsonFile.getName().contains("ALL"))
 			reader = new BufferedReader(new FileReader(jsonFile));
 			try {
 				while ((line = reader.readLine()) != null) {
