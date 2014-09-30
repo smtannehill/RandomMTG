@@ -42,6 +42,9 @@ public class TextGenerator {
   public Card createRandomCard(final List<Card> cards) {
     for (final Card card : cards) {
       if (!cardNameSet.contains(card.getName())) {
+        if (card.getName().equals("Boldwyr Intimidator")) {
+          System.out.println();
+        }
         appendToMap(card.getName(), nameMap, prefixNames, nameMarkov);
         appendToMap(card.getText(), textMap, prefixText, textMarkov);
         cardNameSet.add(card.getName());

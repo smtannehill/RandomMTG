@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.function.Predicate;
 
+import com.google.common.collect.Lists;
 import com.seantana.card.loading.SetReader;
 import com.seantana.card.pojos.Card;
 import com.seantana.card.pojos.CardColor;
@@ -25,7 +26,7 @@ public class RandomMtgCard {
 
       @Override
       public boolean test(final Card t) {
-        if ((t.getTypes() != null) && (t.getTypes().contains(type.getType())))
+        if ((t.getTypes() != null) && (t.getTypes().equals(Lists.newArrayList(type.getType()))))
           return true;
         return false;
       }
