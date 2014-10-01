@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import com.google.common.collect.Lists;
+import com.seantana.card.loading.CardFormatUtils;
 import com.seantana.card.loading.SetReader;
 import com.seantana.card.pojos.Card;
 import com.seantana.card.pojos.CardColor;
@@ -16,8 +17,10 @@ public class RandomMtgCard {
   public static void main(final String[] args) throws IOException {
     List<Card> cards = new SetReader(new File("AllSetFiles")).createCardList();
     cards = SetReader.filterCardList(cards, filterByCardType(CardType.CREATURE));
-    cards = SetReader.adjustRulesText(cards);
+    cards = CardFormatUtils.adjustRulesText(cards);
     final Card card = new TextGenerator(1, 4).createRandomCard(cards);
+    CardFormatUtils.injectCardName(card);
+    CardFormatUtils.injectNewLineCharacters(card);
     System.out.println(card);
   }
 

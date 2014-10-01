@@ -448,7 +448,7 @@ public class Card {
 
   @Override
   public String toString() {
-    return new GsonBuilder().create().toJson(this);
+    return new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(this);
   }
 
 }
