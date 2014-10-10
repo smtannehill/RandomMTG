@@ -16,7 +16,8 @@ public class RandomMtgCard {
 
   public static void main(final String[] args) throws IOException {
     List<Card> cards = new SetReader(new File("AllSetFiles")).createCardList();
-    cards = SetReader.filterCardList(cards, filterByCardType(CardType.CREATURE));
+    cards = SetReader
+        .filterCardList(cards, filterByCardType(CardType.CREATURE));
     cards = CardFormatUtils.adjustRulesText(cards);
     final Card card = new TextGenerator(4).createRandomCard(cards);
     CardFormatUtils.injectCardName(card);
@@ -29,7 +30,8 @@ public class RandomMtgCard {
 
       @Override
       public boolean test(final Card t) {
-        if ((t.getTypes() != null) && (t.getTypes().equals(Lists.newArrayList(type.getType()))))
+        if ((t.getTypes() != null)
+            && (t.getTypes().equals(Lists.newArrayList(type.getType()))))
           return true;
         return false;
       }
@@ -46,8 +48,6 @@ public class RandomMtgCard {
           return true;
         return false;
       }
-
     };
   }
-
 }
