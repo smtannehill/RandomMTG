@@ -2,8 +2,10 @@ package com.seantana.card.generator;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
@@ -19,22 +21,32 @@ public class TextGenerator {
 
   private final Set<String>              cardNameSet;
 
-  private final Set<String>              prefixNames;
-  private final Multimap<String, String> nameMap;
+  private final List<List<String>>       wordOnlyNameMatrix;
+  private final List<List<String>>       fullNameMatrix;
+  private final Map<String, Boolean>     nameEndWords;
+
+  private final List<List<String>>       wordOnlyTypeMatrix;
+  private final List<List<String>>       fullTypeMatrix;
+  private final Map<String, Boolean>     typeEndWords;
 
   private final Set<String>              prefixText;
   private final Multimap<String, String> textMap;
 
-  private final int                      nameMarkov;
   private final int                      textMarkov;
 
-  public TextGenerator(final int nameMarkov, final int textMarkov) {
-    this.nameMarkov = nameMarkov;
+  public TextGenerator(final int textMarkov) {
     this.textMarkov = textMarkov;
 
     cardNameSet = new HashSet<String>();
-    prefixNames = new HashSet<String>();
-    nameMap = ArrayListMultimap.create();
+
+    wordOnlyNameMatrix = new ArrayList<List<String>>();
+    fullNameMatrix = new ArrayList<List<String>>();
+    nameEndWords = new HashMap<String, Boolean>();
+
+    wordOnlyTypeMatrix = new ArrayList<List<String>>();
+    fullTypeMatrix = new ArrayList<List<String>>();
+    typeEndWords = new HashMap<String, Boolean>();
+
     prefixText = new HashSet<String>();
     textMap = ArrayListMultimap.create();
   }
@@ -42,12 +54,42 @@ public class TextGenerator {
   public Card createRandomCard(final List<Card> cards) {
     for (final Card card : cards) {
       if (!cardNameSet.contains(card.getName())) {
-        appendToMap(card.getName(), nameMap, prefixNames, nameMarkov);
+        appendToMatrix(Lists.newArrayList(card.getName().split(" ")), wordOnlyNameMatrix, fullNameMatrix, nameEndWords);
+        if ((card.getSubtypes() != null) && (card.getSubtypes().size() > 0)) {
+          appendToMatrix(card.getSubtypes(), wordOnlyTypeMatrix, fullTypeMatrix, typeEndWords);
+        }
         appendToMap(card.getText(), textMap, prefixText, textMarkov);
         cardNameSet.add(card.getName());
       }
     }
     return generateRandomCard();
+  }
+
+  private void appendToMatrix(final List<String> input, final List<List<String>> wordOnlyMatrix, final List<List<String>> fullMatrix,
+      final Map<String, Boolean> endWords) {
+    int x = 0;
+    String word = "";
+    for (final String inputWord : input) {
+      word = inputWord;
+      addWordToMatrix(x, word, wordOnlyMatrix);
+      addWordToMatrix(x, word, fullMatrix);
+      if (endWords.get(word) == null) {
+        endWords.put(word, Boolean.valueOf(false));
+      }
+      x++;
+    }
+    if (x >= 0) {
+      addWordToMatrix(x, END_PHRASE_CONSTANT, fullMatrix);
+      endWords.put(word, Boolean.valueOf(true));
+    }
+
+  }
+
+  private void addWordToMatrix(final int x, final String word, final List<List<String>> list) {
+    if (list.size() <= x) {
+      list.add(new ArrayList<String>());
+    }
+    list.get(x).add(word);
   }
 
   private void appendToMap(final String source, final Multimap<String, String> map, final Set<String> prefixSet, final int markov) {
@@ -92,9 +134,40 @@ public class TextGenerator {
 
   private Card generateRandomCard() {
     final Card card = new Card();
-    card.setName(generateRandomString(nameMap, prefixNames));
+    card.setName(generateCardName());
+    card.setSubtypes(generateCardSubtype());
     card.setText(generateRandomString(textMap, prefixText));
     return card;
+  }
+
+  private String generateCardName() {
+    return generateUsingMatrices(wordOnlyNameMatrix, fullNameMatrix, nameEndWords);
+  }
+
+  private List<String> generateCardSubtype() {
+    return Lists.newArrayList(generateUsingMatrices(wordOnlyTypeMatrix, fullTypeMatrix, typeEndWords).split(" "));
+  }
+
+  private String generateUsingMatrices(final List<List<String>> wordOnlyMatrix, final List<List<String>> fullWordMatrix,
+      final Map<String, Boolean> endWords) {
+    final Random random = new Random();
+    final StringBuilder builder = new StringBuilder();
+    String word;
+    String nextWord = wordOnlyMatrix.get(0).get(random.nextInt(wordOnlyMatrix.get(0).size()));
+    for (int x = 1; x < fullWordMatrix.size(); x++) {
+      word = nextWord;
+      builder.append(word + " ");
+      List<String> list;
+      if (endWords.get(word)) {
+        list = fullWordMatrix.get(x);
+      } else {
+        list = wordOnlyMatrix.get(x);
+      }
+      nextWord = list.get(random.nextInt(list.size()));
+      if (nextWord.equals(END_PHRASE_CONSTANT))
+        return builder.toString().trim();
+    }
+    return builder.toString().trim();
   }
 
   private String generateRandomString(final Multimap<String, String> map, final Set<String> prefixSet) {

@@ -18,7 +18,7 @@ public class RandomMtgCard {
     List<Card> cards = new SetReader(new File("AllSetFiles")).createCardList();
     cards = SetReader.filterCardList(cards, filterByCardType(CardType.CREATURE));
     cards = CardFormatUtils.adjustRulesText(cards);
-    final Card card = new TextGenerator(1, 4).createRandomCard(cards);
+    final Card card = new TextGenerator(4).createRandomCard(cards);
     CardFormatUtils.injectCardName(card);
     CardFormatUtils.injectNewLineCharacters(card);
     System.out.println(card);
